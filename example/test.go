@@ -10,16 +10,16 @@ func main() {
 	app.AddPage("/about", "About", "page")
 	app.AddPage("/contact", "Contact", "page")
 
-	/*
-		app.AddPage("/login", "Login", "login")
-		app.AddPage("/register", "Register", "register")
+	app.Options.LoginAction = "/login"
+	app.AddPage("/login", "Login", "login")
+	app.Options.RegisterAction = "/register"
+	app.AddPage("/register", "Register", "register")
 
-		app.Options.Menus["Main"] = []goingup.MenuItem{
-			{URL: "/", Text: "Home"},
-			{URL: "/about", Text: "About"},
-			{URL: "/contact", Text: "Contact"},
-		}
-	*/
+	app.Options.Menus["Main"] = []goingup.MenuItem{
+		{URL: "/", Text: "Home"},
+		{URL: "/about", Text: "About"},
+		{URL: "/contact", Text: "Contact"},
+	}
 
 	app.Run()
 }

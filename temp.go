@@ -19,12 +19,7 @@ type pageData struct {
 }
 
 func newPageData(req *http.Request, page Page) *pageData {
-	return &pageData{
-		Title:    page.Title,
-		URL:      page.URL,
-		Template: page.Template,
-		Opts:     app.Options,
-	}
+	return &pageData{page, app.Options}
 }
 
 func makePageHandler(page Page) http.HandlerFunc {

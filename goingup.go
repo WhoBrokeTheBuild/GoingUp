@@ -18,6 +18,19 @@ type App struct {
 	Templates *template.Template
 }
 
+// AppOptions is the container for all the global application settings
+type AppOptions struct {
+	Port            int
+	TemplateDir     string
+	StaticAssetsDir string
+	StaticAssetsURL string
+
+	LoginAction    string
+	RegisterAction string
+
+	Menus map[string][]MenuItem
+}
+
 // NewApp creates a new App instance
 func NewApp() *App {
 	app = &App{
@@ -28,6 +41,7 @@ func NewApp() *App {
 			StaticAssetsURL: "/static/",
 			LoginAction:     "/login",
 			RegisterAction:  "/register",
+			Menus:           make(map[string][]MenuItem, 10),
 		},
 	}
 	return app
@@ -55,6 +69,8 @@ func (a *App) AddPage(url string, title string, tmpl string) error {
 // Run finalizes all options and calls the ListenAndServe function to serve
 // requests
 func (a *App) Run() {
+	fmt.Println("GoingUp App Starting")
+
 	r := mux.NewRouter()
 
 	fs := http.FileServer(http.Dir(a.Options.StaticAssetsDir))
@@ -64,6 +80,10 @@ func (a *App) Run() {
 		r.HandleFunc(page.URL, makePageHandler(page))
 	}
 
+	fmt.Println("Parsing Templates")
 	a.Templates = template.Must(template.ParseGlob(a.Options.TemplateDir + "/*"))
-	http.ListenAndServe(":"+strconv.Itoa(a.Options.Port), newLogHandler(r))
+
+	strPort := strconv.Itoa(a.Options.Port)
+	fmt.Printf("Listening on %s\n", strPort)
+	http.ListenAndServe(":"+strPort, newLogHandler(r))
 }
