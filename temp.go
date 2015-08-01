@@ -3,13 +3,16 @@ package goingup
 import (
 	"fmt"
 	"net/http"
+	"html/template"
 )
 
 // Page represents a web page
 type Page struct {
-	Title    string
-	URL      string
-	Template string
+	Title       string
+	URL         string
+	Template    string
+	ContentName string
+	Content     template.HTML
 }
 
 // pageData is the data that will be passed to the templates
