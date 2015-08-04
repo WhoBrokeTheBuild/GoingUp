@@ -9,65 +9,30 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var app *App
-
 // App represents the whole goingup application
 type App struct {
-	Options   AppOptions
-	Pages     []Page
+	Options   *Config
+	Pages     []*Page
+	Menus     map[string]*Menu
 	Templates *template.Template
 	Content   map[string]string
 }
 
-// AppOptions is the container for all the global application settings
-type AppOptions struct {
-	Port            int
-	TemplateDir     string
-	ContentDir      string
-	StaticAssetsDir string
-	StaticAssetsURL string
-
-	LoginAction    string
-	RegisterAction string
-
-	Menus map[string][]MenuItem
-}
-
 // NewApp creates a new App instance
 func NewApp() *App {
-	app = &App{
-		Options: AppOptions{
-			Port:            80,
-			TemplateDir:     "templates",
-			ContentDir:      "content",
-			StaticAssetsDir: "static/",
-			StaticAssetsURL: "/static/",
-			LoginAction:     "/login",
-			RegisterAction:  "/register",
-			Menus:           make(map[string][]MenuItem, 10),
-		},
+	return &App{
+		Options: NewConfig(),
+		Pages:   make([]*Page, 0),
+		Menus:   make(map[string]*Menu, 0),
 	}
-	return app
 }
 
-// AddPage _
-func (a *App) AddPage(url string, title string, tmpl string, ctnt string) error {
-	if url == "" {
-		return fmt.Errorf("Cannot create page with no URL")
-	}
+func (a *App) AddPage(page *Page) {
+    a.Pages = append(a.Pages, page)
+}
 
-	if tmpl == "" {
-		tmpl = "page"
-	}
-
-	a.Pages = append(a.Pages, Page{
-		URL:      url,
-		Title:    title,
-		Template: tmpl,
-		ContentName:  ctnt,
-	})
-
-	return nil
+func (a *App) AddMenu(name string, menu *Menu) {
+    a.Menus[name] = menu
 }
 
 // Run finalizes all options and calls the ListenAndServe function to serve
@@ -94,10 +59,17 @@ func (a *App) Run() {
 			}
 		}
 		page.Content = template.HTML(content)
-		r.HandleFunc(page.URL, makePageHandler(page))
+		r.HandleFunc(page.URL, makePageHandler(a, page))
 	}
 
 	strPort := strconv.Itoa(a.Options.Port)
 	fmt.Printf("Listening on %s\n", strPort)
 	http.ListenAndServe(":"+strPort, newLogHandler(r))
+}
+
+func newLogHandler(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Printf("%s %s %s\n", r.RemoteAddr, r.Method, r.URL)
+		handler.ServeHTTP(w, r)
+	})
 }
